@@ -345,63 +345,73 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
         final int adapterPosition = position; // ensure it's final for the lambda
 
         if (holder.playerView != null) {
-            final GestureDetector playerGestureDetector = new GestureDetector(holder.playerView.getContext(), new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onDoubleTap(MotionEvent e) {
-                    if (App.getInstance().getId() != 0 && !p.isMyLike()) {
-                        p.setMyLike(true);
-                        p.setLikesCount(p.getLikesCount() + 1);
-                        notifyItemChanged(adapterPosition);
-                        like(p, adapterPosition, 0);
-                    }
-                    showHeartAnimation(holder.mHeartOverlay);
-                    return true;
-                }
-                @Override
-                public boolean onSingleTapConfirmed(MotionEvent e) {
-                    // Only open fullscreen for app-hosted videos (not YouTube).
-                    try {
-                        if (p.getVideoUrl() != null && p.getVideoUrl().length() != 0) {
-                            // Stop/release per-row player if active for this adapter position
-                            if (currentPlayer != null && currentPlayingPosition == adapterPosition) {
-                                try { currentPlayer.setPlayWhenReady(false); } catch (Throwable ignored) {}
-                                try { currentPlayer.stop(); } catch (Throwable ignored) {}
-                                try { currentPlayer.release(); } catch (Throwable ignored) {}
-                                currentPlayer = null;
-                                if (currentPlayerViewHolder != null) {
-                                    try { currentPlayerViewHolder.releasePlayer(); } catch (Throwable ignored) {}
-                                    currentPlayerViewHolder = null;
-                                }
-                                currentPlayingPosition = -1;
-                            }
-                            // Stop/release shared autoplay player if present
-                            if (sharedPlayer != null) {
-                                try { sharedPlayer.setPlayWhenReady(false); } catch (Throwable ignored) {}
-                                try { sharedPlayer.stop(); } catch (Throwable ignored) {}
-                                try { sharedPlayer.release(); } catch (Throwable ignored) {}
-                                sharedPlayer = null;
-                            }
-                            if (sharedHolder != null) {
-                                try { sharedHolder.playerView.setPlayer(null); } catch (Throwable ignored) {}
-                                sharedHolder = null;
-                            }
-                            sharedPosition = RecyclerView.NO_POSITION;
-
-                            // Open fullscreen activity for app-hosted video
-                            watchVideo(p.getVideoUrl());
+            final GestureDetector playerGestureDetector = new GestureDetector(holder.playerView.getContext(),
+                    new GestureDetector.SimpleOnGestureListener() {
+                        @Override
+                        public boolean onDown(MotionEvent e) {
+                            // Must return true so GestureDetector will track subsequent events (needed for double-tap)
                             return true;
                         }
-                    } catch (Throwable ignored) {}
-                    // For YouTube or if no app-hosted video, do nothing special here;
-                    // return false so StyledPlayerView/controls can handle the tap (pause/play).
-                    return false;
-                }
-            });
+
+                        @Override
+                        public boolean onDoubleTap(MotionEvent e) {
+                            if (App.getInstance().getId() != 0 && !p.isMyLike()) {
+                                p.setMyLike(true);
+                                p.setLikesCount(p.getLikesCount() + 1);
+                                notifyItemChanged(adapterPosition);
+                                like(p, adapterPosition, 0);
+                            }
+                            showHeartAnimation(holder.mHeartOverlay);
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onSingleTapConfirmed(MotionEvent e) {
+                            // Only open fullscreen for app-hosted videos (not YouTube).
+                            try {
+                                if (p.getVideoUrl() != null && p.getVideoUrl().length() != 0) {
+                                    // Stop/release per-row player if active for this adapter position
+                                    if (currentPlayer != null && currentPlayingPosition == adapterPosition) {
+                                        try { currentPlayer.setPlayWhenReady(false); } catch (Throwable ignored) {}
+                                        try { currentPlayer.stop(); } catch (Throwable ignored) {}
+                                        try { currentPlayer.release(); } catch (Throwable ignored) {}
+                                        currentPlayer = null;
+                                        if (currentPlayerViewHolder != null) {
+                                            try { currentPlayerViewHolder.releasePlayer(); } catch (Throwable ignored) {}
+                                            currentPlayerViewHolder = null;
+                                        }
+                                        currentPlayingPosition = -1;
+                                    }
+                                    // Stop/release shared autoplay player if present
+                                    if (sharedPlayer != null) {
+                                        try { sharedPlayer.setPlayWhenReady(false); } catch (Throwable ignored) {}
+                                        try { sharedPlayer.stop(); } catch (Throwable ignored) {}
+                                        try { sharedPlayer.release(); } catch (Throwable ignored) {}
+                                        sharedPlayer = null;
+                                    }
+                                    if (sharedHolder != null) {
+                                        try { sharedHolder.playerView.setPlayer(null); } catch (Throwable ignored) {}
+                                        sharedHolder = null;
+                                    }
+                                    sharedPosition = RecyclerView.NO_POSITION;
+
+                                    // Open fullscreen activity for app-hosted video
+                                    watchVideo(p.getVideoUrl());
+                                    return true;
+                                }
+                            } catch (Throwable ignored) {}
+                            // For YouTube or if no app-hosted video, do nothing special here;
+                            // return false so StyledPlayerView/controls can handle the tap (pause/play).
+                            return false;
+                        }
+                    });
+
+            // IMPORTANT: return the detector result so when the detector handles the touch it is consumed
             holder.playerView.setOnTouchListener((viewTouched, event) -> {
+                // Let GestureDetector process the event, but always consume the touch so PlayerView doesn't handle it
                 playerGestureDetector.onTouchEvent(event);
-                return false; // Let player controls still work
-            });
-        }
+                return true; // CONSUME the event
+            });}
 // --- End double-tap block ---
         holder.playerView.setVisibility(View.VISIBLE);
         holder.btnMute.setVisibility(View.VISIBLE);
@@ -960,7 +970,8 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
                     holder.playerView.setOnTouchListener(new View.OnTouchListener() {
                         @Override
                         public boolean onTouch(View v, MotionEvent event) {
-                            return playerGestureDetector.onTouchEvent(event);
+                            playerGestureDetector.onTouchEvent(event);
+                            return true; // CONSUME the event
                         }
                     });
                 }
