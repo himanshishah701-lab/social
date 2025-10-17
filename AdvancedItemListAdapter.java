@@ -358,7 +358,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
                             if (App.getInstance().getId() != 0 && !p.isMyLike()) {
                                 p.setMyLike(true);
                                 p.setLikesCount(p.getLikesCount() + 1);
-                                notifyItemChanged(adapterPosition);
+                                notifyItemChanged(adapterPosition, "reactions");
                                 like(p, adapterPosition, 0);
                             }
                             showHeartAnimation(holder.mHeartOverlay);
@@ -953,7 +953,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
                                     if (App.getInstance().getId() != 0 && !p.isMyLike()) {
                                         p.setMyLike(true);
                                         p.setLikesCount(p.getLikesCount() + 1);
-                                        notifyItemChanged(adapterPosition);
+                                        notifyItemChanged(adapterPosition, "reactions");
                                         like(p, adapterPosition, 0);
                                     }
                                     showHeartAnimation(holder.mHeartOverlay);
@@ -1537,7 +1537,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
                         if (App.getInstance().getId() != 0 && !p.isMyLike()) {
                             p.setMyLike(true);
                             p.setLikesCount(p.getLikesCount() + 1);
-                            notifyItemChanged(position);
+                            notifyItemChanged(position, "reactions");
                             like(p, position, 0);
                         }
                         showHeartAnimation(holder.mHeartOverlay);
@@ -1609,7 +1609,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
                 if (App.getInstance().getId() != 0 && !p.isMyLike()) {
                     p.setMyLike(true);
                     p.setLikesCount(p.getLikesCount() + 1);
-                    notifyItemChanged(position);
+                    notifyItemChanged(position, "reactions");
                     like(p, position, 0);
                 }
                 showHeartAnimation(holder.mHeartOverlay);
@@ -1904,7 +1904,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
                         //imgLike.setImageResource(R.drawable.ic_like_active);
                     }
 
-                    notifyItemChanged(position);
+                    notifyItemChanged(position, "reactions");
 
                     animateIcon(imgLike);
                 }
@@ -1941,7 +1941,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
 
                 p.setReaction(0);
 
-                notifyItemChanged(position);
+                notifyItemChanged(position, "reactions");
 
                 animateIcon(imgLike);
 
@@ -1977,7 +1977,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
 
                 p.setReaction(1);
 
-                notifyItemChanged(position);
+                notifyItemChanged(position, "reactions");
 
                 animateIcon(imgLike);
 
@@ -2013,7 +2013,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
 
                 p.setReaction(2);
 
-                notifyItemChanged(position);
+                notifyItemChanged(position, "reactions");
 
                 animateIcon(imgLike);
 
@@ -2049,7 +2049,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
 
                 p.setReaction(3);
 
-                notifyItemChanged(position);
+                notifyItemChanged(position, "reactions");
 
                 animateIcon(imgLike);
 
@@ -2085,7 +2085,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
 
                 p.setReaction(4);
 
-                notifyItemChanged(position);
+                notifyItemChanged(position, "reactions");
 
                 animateIcon(imgLike);
 
@@ -2121,7 +2121,7 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
 
                 p.setReaction(5);
 
-                notifyItemChanged(position);
+                notifyItemChanged(position, "reactions");
 
                 animateIcon(imgLike);
 
@@ -3073,5 +3073,99 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
         final Item p = items.get(position);
 
         return p.getViewType();
+    }
+
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull List<Object> payloads) {
+        if (payloads != null && !payloads.isEmpty()) {
+            for (Object payload : payloads) {
+                if (payload instanceof String && ((String) payload).equals("reactions")) {
+                    // Partial update: update reaction UI and counters only, do NOT release player or change playerView
+                    Item p = items.get(position);
+
+                    // Update like/reaction display
+                    if (p.isMyLike()) {
+                        holder.mItemLikeButtonText.setTextColor(context.getResources().getColor(R.color.colorTextReactionAny));
+                        switch (p.getReaction()) {
+                            case 1: {
+                                holder.mItemLikeImg.setImageResource(R.drawable.ic_reaction_1);
+                                holder.mItemLikeButtonText.setText(R.string.label_reaction_1);
+                                break;
+                            }
+                            case 2: {
+                                holder.mItemLikeImg.setImageResource(R.drawable.ic_reaction_2);
+                                holder.mItemLikeButtonText.setText(R.string.label_reaction_2);
+                                break;
+                            }
+                            case 3: {
+                                holder.mItemLikeImg.setImageResource(R.drawable.ic_reaction_3);
+                                holder.mItemLikeButtonText.setText(R.string.label_reaction_3);
+                                break;
+                            }
+                            case 4: {
+                                holder.mItemLikeImg.setImageResource(R.drawable.ic_reaction_4);
+                                holder.mItemLikeButtonText.setText(R.string.label_reaction_4);
+                                break;
+                            }
+                            case 5: {
+                                holder.mItemLikeImg.setImageResource(R.drawable.ic_reaction_5);
+                                holder.mItemLikeButtonText.setText(R.string.label_reaction_5);
+                                break;
+                            }
+                            default: {
+                                holder.mItemLikeImg.setImageResource(R.drawable.ic_reaction_0);
+                                holder.mItemLikeButtonText.setText(R.string.label_reaction_0);
+                                holder.mItemLikeButtonText.setTextColor(context.getResources().getColor(R.color.colorTextReactionLike));
+                                break;
+                            }
+                        }
+                    } else {
+                        holder.mItemLikeImg.setImageResource(R.drawable.ic_like);
+                        holder.mItemLikeButtonText.setText(R.string.label_reaction_0);
+                        holder.mItemLikeButtonText.setTextColor(context.getResources().getColor(R.color.item_action_icon_tint));
+                    }
+
+                    // Update counters (likes/comments)
+                    if (p.getCommentsCount() > 0 || p.getLikesCount() > 0) {
+                        holder.mItemCommentsCountImage.setVisibility(View.GONE);
+                        holder.mItemCommentsCountText.setVisibility(View.GONE);
+
+                        holder.mItemLikesCountImage.setVisibility(View.GONE);
+                        holder.mItemLikesCountText.setVisibility(View.GONE);
+
+                        holder.mItemCountersContainer.setVisibility(View.VISIBLE);
+
+                        if (p.getCommentsCount() > 0) {
+                            holder.mItemCommentsCountImage.setVisibility(View.VISIBLE);
+                            holder.mItemCommentsCountText.setVisibility(View.VISIBLE);
+                            holder.mItemCommentsCountText.setText(Integer.toString(p.getCommentsCount()));
+                        }
+
+                        if (p.getLikesCount() > 0) {
+                            holder.mItemLikesCountImage.setVisibility(View.VISIBLE);
+                            holder.mItemLikesCountText.setVisibility(View.VISIBLE);
+                            holder.mItemLikesCountText.setText(Integer.toString(p.getLikesCount()));
+                        }
+                    } else {
+                        holder.mItemCountersContainer.setVisibility(View.GONE);
+                    }
+
+                    // Update reposts count if present
+                    if (p.getRePostsCount() > 0) {
+                        holder.mItemRepostsCount.setVisibility(View.VISIBLE);
+                        holder.mItemRepostsCount.setText(Integer.toString(p.getRePostsCount()));
+                    } else {
+                        holder.mItemRepostsCount.setVisibility(View.GONE);
+                    }
+
+                    // Done with partial update
+                    return;
+                }
+            }
+        }
+
+        // Fallback to full bind
+        onBindViewHolder(holder, position);
     }
 }
