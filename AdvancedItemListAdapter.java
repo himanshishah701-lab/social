@@ -931,27 +931,37 @@ public class AdvancedItemListAdapter extends RecyclerView.Adapter<AdvancedItemLi
                 final int adapterPosition = position; // ensure it's final for the lambda
 
                 if (holder.playerView != null) {
-                    final GestureDetector playerGestureDetector = new GestureDetector(holder.playerView.getContext(), new GestureDetector.SimpleOnGestureListener() {
+                    final GestureDetector playerGestureDetector = new GestureDetector(holder.playerView.getContext(),
+                            new GestureDetector.SimpleOnGestureListener() {
+                                @Override
+                                public boolean onDown(MotionEvent e) {
+                                    return true;
+                                }
+
+                                @Override
+                                public boolean onDoubleTap(MotionEvent e) {
+                                    if (App.getInstance().getId() != 0 && !p.isMyLike()) {
+                                        p.setMyLike(true);
+                                        p.setLikesCount(p.getLikesCount() + 1);
+                                        notifyItemChanged(adapterPosition);
+                                        like(p, adapterPosition, 0);
+                                    }
+                                    showHeartAnimation(holder.mHeartOverlay);
+                                    return true;
+                                }
+
+                                @Override
+                                public boolean onSingleTapConfirmed(MotionEvent e) {
+                                    // Optional: handle single tap if wanted
+                                    return false;
+                                }
+                            });
+
+                    holder.playerView.setOnTouchListener(new View.OnTouchListener() {
                         @Override
-                        public boolean onDoubleTap(MotionEvent e) {
-                            if (App.getInstance().getId() != 0 && !p.isMyLike()) {
-                                p.setMyLike(true);
-                                p.setLikesCount(p.getLikesCount() + 1);
-                                notifyItemChanged(adapterPosition);
-                                like(p, adapterPosition, 0);
-                            }
-                            showHeartAnimation(holder.mHeartOverlay);
-                            return true;
+                        public boolean onTouch(View v, MotionEvent event) {
+                            return playerGestureDetector.onTouchEvent(event);
                         }
-                        @Override
-                        public boolean onSingleTapConfirmed(MotionEvent e) {
-                            // Optional: pause/play video, or do nothing.
-                            return false;
-                        }
-                    });
-                    holder.playerView.setOnTouchListener((viewTouched, event) -> {
-                        playerGestureDetector.onTouchEvent(event);
-                        return false; // Let player controls still work
                     });
                 }
 // --- End double-tap block ---
